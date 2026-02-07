@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "305106570936",
+    "project_id": "wordscopes-webxera",
+    "storage_bucket": "wordscopes-webxera.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:305106570936:android:e452f39ca73deceadf2e4d",
+        "android_client_info": {
+          "package_name": "com.webxera.wordscope"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAW9d7Ubndk_OLytuY9mPboAVUYgKpos8M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
