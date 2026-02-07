@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Animated, Easing } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  ScrollView,
+  Animated,
+  Easing,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -18,7 +26,8 @@ import { getCoins } from '../storage/user';
 import { getGuideSeen, setGuideSeen } from '../storage/user';
 
 export const MoodsScreen: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [mode, setMode] = useState<'classic' | 'time'>('classic');
   const [order, setOrder] = useState(Categories);
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -31,7 +40,7 @@ export const MoodsScreen: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    getGuideSeen('moods').then((seen) => setShowGuide(!seen));
+    getGuideSeen('moods').then(seen => setShowGuide(!seen));
   }, []);
 
   useEffect(() => {
@@ -62,7 +71,10 @@ export const MoodsScreen: React.FC = () => {
       <ScreenBackground tint={Colors.cool} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.topRow}>
-          <Pressable style={styles.iconButton} onPress={() => setShowSettings(true)}>
+          <Pressable
+            style={styles.iconButton}
+            onPress={() => setShowSettings(true)}
+          >
             <Text style={styles.iconText}>⚙</Text>
           </Pressable>
           <CoinBadge coins={coins} />
@@ -72,7 +84,9 @@ export const MoodsScreen: React.FC = () => {
           <View>
             <Text style={styles.sectionTitle}>Choose Difficulty</Text>
             <Text style={styles.sectionHint}>
-              {mode === 'time' ? 'Hard mode shuffles moods.' : 'Easy mode keeps the flow.'}
+              {mode === 'time'
+                ? 'Hard mode shuffles moods.'
+                : 'Easy mode keeps the flow.'}
             </Text>
           </View>
           <ModeToggle mode={mode} onChange={setMode} />
@@ -84,21 +98,46 @@ export const MoodsScreen: React.FC = () => {
             opacity: fadeAnim,
             transform: [
               {
-                translateY: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }),
+                translateY: fadeAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [8, 0],
+                }),
               },
             ],
             gap: 12,
           }}
         >
-          {order.map((category) => (
+          {order.map(category => (
             <Pressable
               key={category.id}
               style={[styles.card, { borderColor: category.color }]}
-              onPress={() => navigation.navigate('Category', { categoryId: category.id, mode })}
+              onPress={() =>
+                navigation.navigate('Category', {
+                  categoryId: category.id,
+                  mode,
+                })
+              }
             >
-              <View style={[styles.gradientBar, { backgroundColor: category.color }]} />
-              <View style={[styles.illustration, styles.illustrationTop, { borderColor: category.color }]} />
-              <View style={[styles.illustration, styles.illustrationBottom, { borderColor: category.color }]} />
+              <View
+                style={[
+                  styles.gradientBar,
+                  { backgroundColor: category.color },
+                ]}
+              />
+              <View
+                style={[
+                  styles.illustration,
+                  styles.illustrationTop,
+                  { borderColor: category.color },
+                ]}
+              />
+              <View
+                style={[
+                  styles.illustration,
+                  styles.illustrationBottom,
+                  { borderColor: category.color },
+                ]}
+              />
               <View style={styles.cardInner}>
                 <Text style={styles.cardMood}>{category.mood}</Text>
                 <Text style={styles.cardTitle}>{category.name}</Text>
@@ -109,14 +148,17 @@ export const MoodsScreen: React.FC = () => {
         </Animated.View>
       </ScrollView>
 
-      <FloatingNav
+      {/* <FloatingNav
         active="Moods"
         onNavigate={(tab) => {
           if (tab === 'Moods') return;
           navigation.navigate(tab);
         }}
+      /> */}
+      <SettingsModal
+        visible={showSettings}
+        onClose={() => setShowSettings(false)}
       />
-      <SettingsModal visible={showSettings} onClose={() => setShowSettings(false)} />
       <GuideOverlay
         visible={showGuide}
         title="Easy vs Hard"

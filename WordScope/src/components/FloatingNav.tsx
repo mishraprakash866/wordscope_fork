@@ -1,24 +1,40 @@
-import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { View, Text, Pressable, StyleSheet, Animated } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Colors } from '../theme/colors';
 import { Typography } from '../theme/typography';
 
 export type Tab = 'Home' | 'Daily' | 'Moods';
 
-export const FloatingNav: React.FC<{ active: Tab; onNavigate: (tab: Tab) => void }> = ({
-  active,
-  onNavigate,
-}) => {
+export const FloatingNav: React.FC<{
+  active: Tab;
+  onNavigate: (tab: Tab) => void;
+}> = ({ active, onNavigate }) => {
   const tabs: Tab[] = ['Home', 'Daily', 'Moods'];
   const icons: Record<Tab, string> = {
     Home: 'home',
     Daily: 'calendar',
     Moods: 'grid',
   };
+
+  const showMenuField = useMemo(() => {
+    return tabs.includes(active);
+  }, [active]);
+
+  const bottomAnim = useRef(new Animated.Value(-300)).current;
+
+  useEffect(() => {
+    Animated.spring(bottomAnim, {
+      toValue: showMenuField ? 24 : -300,
+      useNativeDriver: false,
+      friction: 8,
+      tension: 60,
+    }).start();
+  }, [showMenuField]);
+
   return (
-    <View style={styles.wrapper}>
-      {tabs.map((tab) => {
+    <Animated.View style={[styles.wrapper, { bottom: bottomAnim }]}>
+      {tabs.map(tab => {
         const isActive = tab === active;
         return (
           <Pressable
@@ -31,18 +47,19 @@ export const FloatingNav: React.FC<{ active: Tab; onNavigate: (tab: Tab) => void
               size={18}
               color={isActive ? Colors.inkMuted : Colors.warm}
             />
-            <Text style={[styles.label, isActive && styles.labelActive]}>{tab}</Text>
+            <Text style={[styles.label, isActive && styles.labelActive]}>
+              {tab}
+            </Text>
           </Pressable>
         );
       })}
-    </View>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   wrapper: {
     position: 'absolute',
-    bottom: 24,
     left: 24,
     right: 24,
     backgroundColor: Colors.white,
@@ -54,7 +71,7 @@ const styles = StyleSheet.create({
     shadowColor: Colors.shadow,
     shadowOpacity: 0.25,
     shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 10, height: 8 },
     elevation: 6,
   },
   tab: {

@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Animated, Easing, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Animated,
+  Easing,
+  ScrollView,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -18,7 +26,8 @@ import { SettingsModal } from '../components/SettingsModal';
 import { GuideOverlay } from '../components/GuideOverlay';
 
 export const DailyChallengeScreen: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [done, setDone] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [coins, setCoinsState] = useState(0);
@@ -26,11 +35,13 @@ export const DailyChallengeScreen: React.FC = () => {
   const [showGuide, setShowGuide] = useState(false);
 
   useEffect(() => {
-    getDailyState().then((state) => {
+    getDailyState().then(state => {
       const today = new Date().toDateString();
       setDone(state.lastCompletedDate === today);
     });
-    analytics().logEvent('daily_view').catch(() => null);
+    analytics()
+      .logEvent('daily_view')
+      .catch(() => null);
   }, []);
 
   useEffect(() => {
@@ -38,7 +49,7 @@ export const DailyChallengeScreen: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    getGuideSeen('daily').then((seen) => setShowGuide(!seen));
+    getGuideSeen('daily').then(seen => setShowGuide(!seen));
   }, []);
 
   useFocusEffect(
@@ -62,62 +73,72 @@ export const DailyChallengeScreen: React.FC = () => {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <ScreenBackground tint={Colors.cool} />
       <ScrollView contentContainerStyle={styles.content}>
-      <View style={styles.topRow}>
-        <Pressable style={styles.iconButton} onPress={() => setShowSettings(true)}>
-          <Text style={styles.iconText}>⚙</Text>
-        </Pressable>
-        <CoinBadge coins={coins} />
-      </View>
-      <Animated.View
-        style={{
-          opacity: fadeAnim,
-          transform: [
-            {
-              translateY: fadeAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [10, 0],
-              }),
-            },
-          ],
-        }}
-      >
-        <Text style={styles.title}>Daily Challenge</Text>
-        <Text style={styles.subtitle}>Solve today to earn bonus hints.</Text>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>{puzzle.title}</Text>
-          <Text style={styles.cardBody}>{puzzle.words.length} words · {puzzle.size}x{puzzle.size}</Text>
-          <Text style={styles.cardMeta}>{puzzle.seconds ?? 140}s time</Text>
+        <View style={styles.topRow}>
+          <Pressable
+            style={styles.iconButton}
+            onPress={() => setShowSettings(true)}
+          >
+            <Text style={styles.iconText}>⚙</Text>
+          </Pressable>
+          <CoinBadge coins={coins} />
         </View>
-        <Pressable
-          style={[styles.button, done && styles.buttonDisabled]}
-          onPress={() =>
-            navigation.navigate('Game', {
-              puzzleId: puzzle.id,
-              title: puzzle.title,
-              size: puzzle.size,
-              words: puzzle.words,
-              seconds: puzzle.seconds ?? 140,
-              mode: 'time',
-            })
-          }
-          disabled={done}
+        <Animated.View
+          style={{
+            opacity: fadeAnim,
+            transform: [
+              {
+                translateY: fadeAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [10, 0],
+                }),
+              },
+            ],
+          }}
         >
-          <Text style={styles.buttonText}>{done ? 'Completed' : 'Start Daily (Hard)'}</Text>
-        </Pressable>
-      </Animated.View>
-      <SettingsModal visible={showSettings} onClose={() => setShowSettings(false)} />
-      <GuideOverlay
-        visible={showGuide}
-        title="Daily Challenge"
-        body="Complete the daily puzzle for bonus rewards and hints."
-        onClose={() => {
-          setShowGuide(false);
-          setGuideSeen('daily');
-        }}
-      />
+          <Text style={styles.title}>Daily Challenge</Text>
+          <Text style={styles.subtitle}>Solve today to earn bonus hints.</Text>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>{puzzle.title}</Text>
+            <Text style={styles.cardBody}>
+              {puzzle.words.length} words · {puzzle.size}x{puzzle.size}
+            </Text>
+            <Text style={styles.cardMeta}>{puzzle.seconds ?? 140}s time</Text>
+          </View>
+          <Pressable
+            style={[styles.button, done && styles.buttonDisabled]}
+            onPress={() =>
+              navigation.navigate('Game', {
+                puzzleId: puzzle.id,
+                title: puzzle.title,
+                size: puzzle.size,
+                words: puzzle.words,
+                seconds: puzzle.seconds ?? 140,
+                mode: 'time',
+              })
+            }
+            disabled={done}
+          >
+            <Text style={styles.buttonText}>
+              {done ? 'Completed' : 'Start Daily (Hard)'}
+            </Text>
+          </Pressable>
+        </Animated.View>
+        <SettingsModal
+          visible={showSettings}
+          onClose={() => setShowSettings(false)}
+        />
+        <GuideOverlay
+          visible={showGuide}
+          title="Daily Challenge"
+          body="Complete the daily puzzle for bonus rewards and hints."
+          onClose={() => {
+            setShowGuide(false);
+            setGuideSeen('daily');
+          }}
+        />
       </ScrollView>
 
-      <FloatingNav
+      {/* <FloatingNav
         active="Daily"
         onNavigate={(tab) => {
           if (tab === 'Moods') {
@@ -126,7 +147,7 @@ export const DailyChallengeScreen: React.FC = () => {
           }
           navigation.navigate(tab);
         }}
-      />
+      /> */}
     </SafeAreaView>
   );
 };
@@ -174,7 +195,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.mist,
     gap: 10,
-    marginTop:10
+    marginTop: 10,
   },
   cardTitle: {
     ...Typography.subtitle,
@@ -191,7 +212,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: Colors.warm,
     paddingVertical: 14,
-    marginTop:10,
+    marginTop: 10,
     alignItems: 'center',
     borderRadius: 999,
   },
@@ -201,6 +222,6 @@ const styles = StyleSheet.create({
   buttonText: {
     ...Typography.subtitle,
     color: Colors.inkMuted,
-    fontWeight: 800
+    fontWeight: 800,
   },
 });

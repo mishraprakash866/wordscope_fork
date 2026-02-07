@@ -1,5 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Animated, Easing, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  ScrollView,
+  Animated,
+  Easing,
+  Dimensions,
+} from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import analytics from '@react-native-firebase/analytics';
@@ -22,12 +31,16 @@ import {
   setGuideSeen,
   setHomeRewardState,
 } from '../storage/user';
-import { RewardedAd, RewardedAdEventType } from 'react-native-google-mobile-ads';
+import {
+  RewardedAd,
+  RewardedAdEventType,
+} from 'react-native-google-mobile-ads';
 import { Ads } from '../ads/ads';
 import Sound from 'react-native-sound';
 
 export const HomeScreen: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [dailyDone, setDailyDone] = useState(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const didMountRef = useRef(false);
@@ -35,7 +48,10 @@ export const HomeScreen: React.FC = () => {
   const [showReward, setShowReward] = useState(true);
   const [rewardReady, setRewardReady] = useState(false);
   const [rewardCooldownRemaining, setRewardCooldownRemaining] = useState(0);
-  const rewardedAd = useMemo(() => RewardedAd.createForAdRequest(Ads.rewarded), []);
+  const rewardedAd = useMemo(
+    () => RewardedAd.createForAdRequest(Ads.rewarded),
+    [],
+  );
   const coinSoundRef = useRef<Sound | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const pendingRewardRef = useRef(false);
@@ -45,11 +61,13 @@ export const HomeScreen: React.FC = () => {
   const [showGuide, setShowGuide] = useState(false);
 
   useEffect(() => {
-    getDailyState().then((state) => {
+    getDailyState().then(state => {
       const today = new Date().toDateString();
       setDailyDone(state.lastCompletedDate === today);
     });
-    analytics().logEvent('home_view').catch(() => null);
+    analytics()
+      .logEvent('home_view')
+      .catch(() => null);
   }, []);
 
   useEffect(() => {
@@ -66,36 +84,48 @@ export const HomeScreen: React.FC = () => {
     React.useCallback(() => {
       getCoins().then(setCoinsState);
       getSoundEnabled().then(setSoundEnabled);
-      getGuideSeen('home').then((seen) => setShowGuide(!seen));
+      getGuideSeen('home').then(seen => setShowGuide(!seen));
     }, []),
   );
 
   useEffect(() => {
-    const unsub = rewardedAd.addAdEventListener(RewardedAdEventType.LOADED, () =>
-      setRewardReady(true),
+    const unsub = rewardedAd.addAdEventListener(
+      RewardedAdEventType.LOADED,
+      () => setRewardReady(true),
     );
-    const earned = rewardedAd.addAdEventListener(RewardedAdEventType.EARNED_REWARD, async () => {
-      if (!pendingRewardRef.current) return;
-      pendingRewardRef.current = false;
-      const next = await addCoins(100);
-      setCoinsState(next);
-      if (soundEnabled) {
-        coinSoundRef.current?.stop(() => coinSoundRef.current?.play());
-      }
-      Animated.sequence([
-        Animated.timing(coinPulse, { toValue: 1.15, duration: 140, useNativeDriver: true }),
-        Animated.timing(coinPulse, { toValue: 1, duration: 140, useNativeDriver: true }),
-      ]).start();
-      coinFly.setValue(0);
-      Animated.timing(coinFly, {
-        toValue: 1,
-        duration: 420,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }).start();
-      const today = new Date().toDateString();
-      await setHomeRewardState({ lastClaimedDate: today });
-    });
+    const earned = rewardedAd.addAdEventListener(
+      RewardedAdEventType.EARNED_REWARD,
+      async () => {
+        if (!pendingRewardRef.current) return;
+        pendingRewardRef.current = false;
+        const next = await addCoins(100);
+        setCoinsState(next);
+        if (soundEnabled) {
+          coinSoundRef.current?.stop(() => coinSoundRef.current?.play());
+        }
+        Animated.sequence([
+          Animated.timing(coinPulse, {
+            toValue: 1.15,
+            duration: 140,
+            useNativeDriver: true,
+          }),
+          Animated.timing(coinPulse, {
+            toValue: 1,
+            duration: 140,
+            useNativeDriver: true,
+          }),
+        ]).start();
+        coinFly.setValue(0);
+        Animated.timing(coinFly, {
+          toValue: 1,
+          duration: 420,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }).start();
+        const today = new Date().toDateString();
+        await setHomeRewardState({ lastClaimedDate: today });
+      },
+    );
     rewardedAd.load();
     return () => {
       unsub();
@@ -106,7 +136,7 @@ export const HomeScreen: React.FC = () => {
   useEffect(() => {
     if (!rewardCooldownRemaining) return;
     const timer = setInterval(() => {
-      setRewardCooldownRemaining((prev) => (prev > 0 ? prev - 1 : 0));
+      setRewardCooldownRemaining(prev => (prev > 0 ? prev - 1 : 0));
     }, 1000);
     return () => clearInterval(timer);
   }, [rewardCooldownRemaining]);
@@ -148,64 +178,79 @@ export const HomeScreen: React.FC = () => {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <ScreenBackground tint="#8AA4FF" />
       <ScrollView contentContainerStyle={styles.content}>
-      <View style={styles.topRow}>
-        <Pressable style={styles.iconButton} onPress={() => setShowSettings(true)}>
-          <Text style={styles.iconText}>⚙</Text>
-        </Pressable>
-        <Animated.View style={{ transform: [{ scale: coinPulse }] }}>
-          <CoinBadge coins={coins} onPress={claimReward} />
-        </Animated.View>
-      </View>
-
-      <View style={styles.hero}>
-        <Text style={styles.heroTitle}>WordScope</Text>
-        <Text style={styles.heroSubtitle}>Trace every hidden word in the grid.</Text>
-      </View>
-
-      <Animated.View
-        style={{
-          opacity: fadeAnim,
-          transform: [
-            {
-              translateY: fadeAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [8, 0],
-              }),
-            },
-          ],
-          alignItems: 'center',
-        }}
-      >
-        <Pressable style={styles.dailyCenter} onPress={() => navigation.navigate('Daily')}>
-          <Text style={styles.dailyCenterTitle}>Daily Challenge</Text>
-          <Text style={styles.dailyCenterBody}>{dailyPuzzle.title}</Text>
-          <Text style={styles.dailyCenterMeta}>
-            {dailyDone ? 'Completed today' : 'Play now for bonus coins'}
-          </Text>
-        </Pressable>
-      </Animated.View>
-
-      <View style={styles.rewardCard}>
-        <Text style={styles.rewardTitle}>Free Coins</Text>
-        <Text style={styles.rewardBody}>Watch a short ad to get +100 coins.</Text>
-        {rewardCooldownRemaining > 0 ? (
-          <Text style={styles.rewardCooldown}>{`Watch ad again after ${rewardCooldownRemaining}s`}</Text>
-        ) : null}
-        <View style={styles.rewardActions}>
+        <View style={styles.topRow}>
           <Pressable
-            style={[styles.rewardButton, rewardCooldownRemaining > 0 && styles.rewardButtonDisabled]}
-            onPress={claimReward}
-            disabled={rewardCooldownRemaining > 0}
+            style={styles.iconButton}
+            onPress={() => setShowSettings(true)}
           >
-            <Text style={styles.rewardButtonText}>
-              Watch Ad
+            <Text style={styles.iconText}>⚙</Text>
+          </Pressable>
+          <Animated.View style={{ transform: [{ scale: coinPulse }] }}>
+            <CoinBadge coins={coins} onPress={claimReward} />
+          </Animated.View>
+        </View>
+
+        <View style={styles.hero}>
+          <Text style={styles.heroTitle}>WordScope</Text>
+          <Text style={styles.heroSubtitle}>
+            Trace every hidden word in the grid.
+          </Text>
+        </View>
+
+        <Animated.View
+          style={{
+            opacity: fadeAnim,
+            transform: [
+              {
+                translateY: fadeAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [8, 0],
+                }),
+              },
+            ],
+            alignItems: 'center',
+          }}
+        >
+          <Pressable
+            style={styles.dailyCenter}
+            onPress={() => navigation.navigate('Daily')}
+          >
+            <Text style={styles.dailyCenterTitle}>Daily Challenge</Text>
+            <Text style={styles.dailyCenterBody}>{dailyPuzzle.title}</Text>
+            <Text style={styles.dailyCenterMeta}>
+              {dailyDone ? 'Completed today' : 'Play now for bonus coins'}
             </Text>
           </Pressable>
+        </Animated.View>
+
+        <View style={styles.rewardCard}>
+          <Text style={styles.rewardTitle}>Free Coins</Text>
+          <Text style={styles.rewardBody}>
+            Watch a short ad to get +100 coins.
+          </Text>
+          {rewardCooldownRemaining > 0 ? (
+            <Text
+              style={styles.rewardCooldown}
+            >{`Watch ad again after ${rewardCooldownRemaining}s`}</Text>
+          ) : null}
+          <View style={styles.rewardActions}>
+            <Pressable
+              style={[
+                styles.rewardButton,
+                rewardCooldownRemaining > 0 && styles.rewardButtonDisabled,
+              ]}
+              onPress={claimReward}
+              disabled={rewardCooldownRemaining > 0}
+            >
+              <Text style={styles.rewardButtonText}>Watch Ad</Text>
+            </Pressable>
+          </View>
         </View>
-      </View>
 
-      <SettingsModal visible={showSettings} onClose={() => setShowSettings(false)} />
-
+        <SettingsModal
+          visible={showSettings}
+          onClose={() => setShowSettings(false)}
+        />
       </ScrollView>
 
       <Animated.View
@@ -213,7 +258,10 @@ export const HomeScreen: React.FC = () => {
         style={[
           styles.coinFly,
           {
-            opacity: coinFly.interpolate({ inputRange: [0, 1], outputRange: [0.9, 0] }),
+            opacity: coinFly.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0.9, 0],
+            }),
             transform: [
               {
                 translateX: coinFly.interpolate({
@@ -227,21 +275,15 @@ export const HomeScreen: React.FC = () => {
                   outputRange: [0, -Dimensions.get('window').height / 3],
                 }),
               },
-              { scale: coinFly.interpolate({ inputRange: [0, 1], outputRange: [1, 0.6] }) },
+              {
+                scale: coinFly.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [1, 0.6],
+                }),
+              },
             ],
           },
         ]}
-      />
-
-      <FloatingNav
-        active="Home"
-        onNavigate={(tab) => {
-          if (tab === 'Moods') {
-            navigation.navigate('Moods');
-            return;
-          }
-          navigation.navigate(tab);
-        }}
       />
 
       <GuideOverlay
@@ -274,7 +316,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.mist,
     gap: 6,
-    height: 150, 
+    height: 150,
     justifyContent: 'center',
   },
   heroTitle: {

@@ -1,9 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Switch, Linking } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Switch,
+  Linking,
+} from 'react-native';
 import { Colors } from '../theme/colors';
 import { Typography } from '../theme/typography';
 import { ScreenBackground } from '../components/ScreenBackground';
-import { getMusicEnabled, getSoundEnabled, setMusicEnabled, setSoundEnabled } from '../storage/user';
+import {
+  getMusicEnabled,
+  getSoundEnabled,
+  setMusicEnabled,
+  setSoundEnabled,
+} from '../storage/user';
 import { FloatingNav } from '../components/FloatingNav';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -12,7 +24,8 @@ import { RootStackParamList } from '../types/navigation';
 const PRIVACY_URL = 'https://example.com/privacy';
 
 export const SettingsScreen: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [sound, setSound] = useState(true);
   const [music, setMusic] = useState(true);
 
@@ -45,13 +58,19 @@ export const SettingsScreen: React.FC = () => {
           <Switch value={music} onValueChange={toggleMusic} />
         </View>
       </View>
-      <Pressable style={styles.link} onPress={() => Linking.openURL(PRIVACY_URL)}>
+      <Pressable
+        style={styles.link}
+        onPress={() => Linking.openURL(PRIVACY_URL)}
+      >
         <Text style={styles.linkText}>Privacy Policy</Text>
       </Pressable>
-      <Pressable style={styles.link} onPress={() => Linking.openURL('mailto:rupesh027shah@gmail.com')}>
+      <Pressable
+        style={styles.link}
+        onPress={() => Linking.openURL('mailto:rupesh027shah@gmail.com')}
+      >
         <Text style={styles.linkText}>Support</Text>
       </Pressable>
-      <FloatingNav active="Settings" onNavigate={(tab) => navigation.navigate(tab)} />
+      {/* <FloatingNav active="Settings" onNavigate={(tab) => navigation.navigate(tab)} /> */}
     </View>
   );
 };

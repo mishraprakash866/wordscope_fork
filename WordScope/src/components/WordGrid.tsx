@@ -41,7 +41,11 @@ export const WordGrid: React.FC<Props> = ({
   const currentPathRef = useRef<Cell[]>([]);
   const wrapperRef = useRef<View>(null);
   const lastEndRef = useRef<Cell | null>(null);
-  const [debugInfo, setDebugInfo] = useState<{ row: number; col: number; letter: string } | null>(null);
+  const [debugInfo, setDebugInfo] = useState<{
+    row: number;
+    col: number;
+    letter: string;
+  } | null>(null);
 
   const padding = 0;
   const gap = 0;
@@ -64,15 +68,15 @@ export const WordGrid: React.FC<Props> = ({
 
   const foundMap = useMemo(() => {
     const map = new Map<string, string>();
-    foundPaths.forEach((entry) =>
-      entry.cells.forEach((cell) => map.set(cellKey(cell), entry.color)),
+    foundPaths.forEach(entry =>
+      entry.cells.forEach(cell => map.set(cellKey(cell), entry.color)),
     );
     return map;
   }, [foundPaths]);
 
   const selectedSet = useMemo(() => {
     const set = new Set<string>();
-    selectedPath.forEach((cell) => set.add(cellKey(cell)));
+    selectedPath.forEach(cell => set.add(cellKey(cell)));
     return set;
   }, [selectedPath]);
 
@@ -94,7 +98,7 @@ export const WordGrid: React.FC<Props> = ({
     const len = Math.hypot(dx, dy) || 1;
     let best = directions[0];
     let bestScore = -Infinity;
-    directions.forEach((dir) => {
+    directions.forEach(dir => {
       const score = (dx * dir.dx + dy * dir.dy) / len;
       if (score > bestScore) {
         bestScore = score;
@@ -126,7 +130,7 @@ export const WordGrid: React.FC<Props> = ({
         onStartShouldSetPanResponderCapture: () => true,
         onMoveShouldSetPanResponderCapture: () => true,
         onPanResponderTerminationRequest: () => false,
-        onPanResponderGrant: (evt) => {
+        onPanResponderGrant: evt => {
           if (disabled) return;
           const { locationX, locationY } = evt.nativeEvent;
           const cell = getCellFromTouch(locationX, locationY);
@@ -135,24 +139,36 @@ export const WordGrid: React.FC<Props> = ({
             currentPathRef.current = [cell];
             onSelectionChange([cell]);
             if (debug) {
-              setDebugInfo({ row: cell.row, col: cell.col, letter: grid[cell.row][cell.col] });
+              setDebugInfo({
+                row: cell.row,
+                col: cell.col,
+                letter: grid[cell.row][cell.col],
+              });
             }
           }
         },
-        onPanResponderMove: (evt) => {
+        onPanResponderMove: evt => {
           if (disabled) return;
           if (!startCell.current) return;
           const { locationX, locationY } = evt.nativeEvent;
           const cell = getCellFromTouch(locationX, locationY);
           if (!cell) return;
-          if (lastEndRef.current && lastEndRef.current.row === cell.row && lastEndRef.current.col === cell.col) {
+          if (
+            lastEndRef.current &&
+            lastEndRef.current.row === cell.row &&
+            lastEndRef.current.col === cell.col
+          ) {
             return;
           }
           lastEndRef.current = cell;
           const path = buildSnappedPath(startCell.current, cell);
           currentPathRef.current = path;
           if (debug) {
-            setDebugInfo({ row: cell.row, col: cell.col, letter: grid[cell.row][cell.col] });
+            setDebugInfo({
+              row: cell.row,
+              col: cell.col,
+              letter: grid[cell.row][cell.col],
+            });
           }
           // Throttle visual updates to reduce flicker on Android
           requestAnimationFrame(() => {
@@ -187,14 +203,21 @@ export const WordGrid: React.FC<Props> = ({
   };
 
   return (
-    <View ref={wrapperRef} style={styles.wrapper} onLayout={onLayout} {...panResponder.panHandlers}>
+    <View
+      ref={wrapperRef}
+      style={styles.wrapper}
+      onLayout={onLayout}
+      {...panResponder.panHandlers}
+    >
       {debug && debugInfo ? (
         <View style={styles.debugBox}>
-          <Text style={styles.debugText}>{`row ${debugInfo.row} col ${debugInfo.col} = ${debugInfo.letter}`}</Text>
+          <Text
+            style={styles.debugText}
+          >{`row ${debugInfo.row} col ${debugInfo.col} = ${debugInfo.letter}`}</Text>
         </View>
       ) : null}
       {grid.map((row, rowIndex) => (
-        <View key={`row-${rowIndex}`} style={styles.row}>
+        <View pointerEvents="none" key={`row-${rowIndex}`} style={styles.row}>
           {row.map((letter, colIndex) => {
             const key = `${rowIndex}-${colIndex}`;
             const foundColor = foundMap.get(key);
@@ -213,7 +236,14 @@ export const WordGrid: React.FC<Props> = ({
                   isSelected && styles.cellSelected,
                 ]}
               >
-                <Text style={[styles.letter, { fontSize: Math.max(14, cellSize * fontScale) }]}>{letter}</Text>
+                <Text
+                  style={[
+                    styles.letter,
+                    { fontSize: Math.max(14, cellSize * fontScale) },
+                  ]}
+                >
+                  {letter}
+                </Text>
               </View>
             );
           })}

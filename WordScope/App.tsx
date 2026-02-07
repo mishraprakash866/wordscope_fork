@@ -1,6 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StatusBar, View, Text, StyleSheet, Animated, Easing } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  StatusBar,
+  View,
+  Text,
+  StyleSheet,
+  Animated,
+  Easing,
+} from 'react-native';
+import { NavigationContainer, NavigationState } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import mobileAds from 'react-native-google-mobile-ads';
@@ -14,12 +21,16 @@ import { GameScreen } from './src/screens/GameScreen';
 import { DailyChallengeScreen } from './src/screens/DailyChallengeScreen';
 import { Colors } from './src/theme/colors';
 import { initRemoteConfig } from './src/config/remoteConfig';
+import { FloatingNav } from './src/components/FloatingNav';
+import { navigate, navigationRef } from './src/navigation/RootNavigation';
+import { Tab } from './src/components/FloatingNav';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 enableScreens();
 
 const App = () => {
   const [booting, setBooting] = useState(true);
+  const [activeTab, setActiveTab] = useState<Tab>('Home');
   const progress = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -27,7 +38,9 @@ const App = () => {
       .initialize()
       .catch(() => null);
     initRemoteConfig().catch(() => null);
-    analytics().setAnalyticsCollectionEnabled(true).catch(() => null);
+    analytics()
+      .setAnalyticsCollectionEnabled(true)
+      .catch(() => null);
     const timer = setTimeout(() => setBooting(false), 900);
     return () => clearTimeout(timer);
   }, []);
@@ -69,7 +82,15 @@ const App = () => {
   return (
     <SafeAreaProvider>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.paper} />
-      <NavigationContainer>
+      <NavigationContainer
+        onStateChange={(state: Readonly<NavigationState> | undefined) => {
+          const currentRoute = state ? state.routes[state.index] : undefined;
+          if (currentRoute) {
+            setActiveTab(currentRoute.name as Tab);
+          }
+        }}
+        ref={navigationRef}
+      >
         <Stack.Navigator
           screenOptions={{
             headerShown: false,
@@ -78,12 +99,22 @@ const App = () => {
             headerTintColor: Colors.ink,
           }}
         >
-          <Stack.Screen name="Home" component={HomeScreen} />
-          <Stack.Screen name="Moods" component={MoodsScreen} />
-          <Stack.Screen name="Category" component={CategoryScreen} />
-          <Stack.Screen name="Daily" component={DailyChallengeScreen} />
-          <Stack.Screen name="Game" component={GameScreen} />
+          <Stack.Group screenOptions={{ animation: 'fade' }}>
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Moods" component={MoodsScreen} />
+            <Stack.Screen name="Daily" component={DailyChallengeScreen} />
+          </Stack.Group>
+          <Stack.Group screenOptions={{ animation: 'slide_from_bottom' }}>
+            <Stack.Screen name="Category" component={CategoryScreen} />
+            <Stack.Screen name="Game" component={GameScreen} />
+          </Stack.Group>
         </Stack.Navigator>
+        <FloatingNav
+          active={activeTab}
+          onNavigate={tab => {
+            navigate(tab);
+          }}
+        />
       </NavigationContainer>
     </SafeAreaProvider>
   );
